@@ -232,15 +232,17 @@ FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode){
 		strcat(px_mode, "a");
 		if (mode & FA_READ)
 			strcat(px_mode, "+");
+  }else if ((mode & (FA_CREATE_NEW | FA_READ)) == (FA_CREATE_NEW | FA_READ)){
+    strcat(px_mode, "w+x");
 	}else if (mode & FA_CREATE_NEW){
 		strcat(px_mode, "wx");
-	}else if ((mode & (FA_CREATE_NEW | FA_READ)) == (FA_CREATE_NEW | FA_READ)){
-		strcat(px_mode, "w+x");
 	}else if (mode & FA_READ){
 		strcat(px_mode, "r");
 		if (mode & FA_WRITE)
 			strcat(px_mode, "+");
-	}
+	}else if (mode & FA_WRITE){
+    strcat(px_mode, "w");
+  }
 
 	fp->fp = fopen(pp, px_mode);
 	if (fp->fp == NULL)
