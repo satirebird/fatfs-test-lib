@@ -223,16 +223,22 @@ FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode){
 	if (res != FR_OK)
 		return res;
 
+	struct stat statbuf;
+	if (stat(pp, &statbuf) < 0){
+	  if ((mode & FA_OPEN_ALWAYS)){
+	    FILE *cf = fopen(pp, "w+");
+	    if (cf)
+	      fclose(cf);
+	  }
+	}
+	mode &= ~FA_OPEN_ALWAYS;
+
 	char px_mode[16] = "";
 	if (mode & FA_CREATE_ALWAYS){
 		strcat(px_mode, "w");
 		if (mode & FA_READ)
 			strcat(px_mode, "+");
-	}else if (mode & FA_OPEN_ALWAYS){
-		strcat(px_mode, "a");
-		if (mode & FA_READ)
-			strcat(px_mode, "+");
-  }else if ((mode & (FA_CREATE_NEW | FA_READ)) == (FA_CREATE_NEW | FA_READ)){
+	}else if ((mode & (FA_CREATE_NEW | FA_READ)) == (FA_CREATE_NEW | FA_READ)){
     strcat(px_mode, "w+x");
 	}else if (mode & FA_CREATE_NEW){
 		strcat(px_mode, "wx");
@@ -247,10 +253,6 @@ FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode){
 	fp->fp = fopen(pp, px_mode);
 	if (fp->fp == NULL)
 		errno_to_fresult();
-
-	if (mode & FA_OPEN_ALWAYS)
-		if (fseek(fp->fp, 0, SEEK_SET) < 0)
-			return errno_to_fresult();
 
 	return FR_OK;
 }
