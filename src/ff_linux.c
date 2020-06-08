@@ -719,7 +719,11 @@ FSIZE_t f_tell(const FIL* fp){
 }
 
 FSIZE_t f_size(const FIL* fp){
-	return (FSIZE_t)ftell(fp->fp);
+  struct stat buf;
+  if (fstat(fileno(fp->fp), &buf) == 0)
+    return (FSIZE_t)buf.st_size;
+  // fallback: use the current position
+  return (FSIZE_t)ftell(fp->fp);
 }
 
 DWORD get_fattime(void)
