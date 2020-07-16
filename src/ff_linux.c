@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
+#include <limits.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -351,6 +352,8 @@ FRESULT f_opendir (FATFS_DIR* dp, const TCHAR* path){
   if (dp->dir == NULL)
     return errno_to_fresult();
 
+  dp->rp = realpath(pp, NULL);
+
   return FR_OK;
 }
 
@@ -358,6 +361,9 @@ FRESULT f_closedir (FATFS_DIR* dp){
 
   if (dp->dir == NULL)
     return FR_INVALID_OBJECT;
+
+  if (dp->rp != NULL)
+    free(dp->rp);
 
   if (closedir(dp->dir) < 0)
     return errno_to_fresult();
@@ -390,7 +396,17 @@ FRESULT f_readdir (FATFS_DIR* dp, FILINFO* fno){
   get_fataltname(fno->altname, dirent->d_name);
 #endif
 
-  fno->fsize = 0; //Some sizes needed?
+  fno->fsize = 0;
+
+  if (dp->rp != NULL){
+    char *buf = malloc(PATH_MAX + 1);
+    snprintf(buf, PATH_MAX, "%s/%s", dp->rp, dirent->d_name);
+    struct stat st;
+    if (stat(buf, &st) == 0)
+      fno->fsize = st.st_size;
+    free(buf);
+  }
+
   fno->fattrib = 0;
 
   switch (dirent->d_type){

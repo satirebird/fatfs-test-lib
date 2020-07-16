@@ -58,6 +58,7 @@ typedef struct {
 
 typedef struct {
   void *dir;
+  char *rp; //The realpath result
 } DIR;
 
 
