@@ -1,8 +1,6 @@
 /*
- * ff_linux.c
- *
- *  Created on: 07.04.2020
- *      Author: sven
+ * This small implementation can be used for testing some application which
+ * uses the Fatfs module from http://elm-chan.org/fsw/ff/00index_e.html.
  */
 
 #define DIR FATFS_DIR

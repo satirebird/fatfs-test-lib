@@ -1,8 +1,5 @@
 /*
- * ff.h
- *
- *  Created on: 07.04.2020
- *      Author: sven
+ * Header file of the FatFS test library. See README.md for further information.
  */
 
 #ifndef _FF_H_

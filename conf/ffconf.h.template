@@ -11,35 +11,6 @@
 / Locale and Namespace Configurations
 /---------------------------------------------------------------------------*/
 
-#define _CODE_PAGE	1252
-/* This option specifies the OEM code page to be used on the target system.
-/  Incorrect setting of the code page can cause a file open failure.
-/
-/   1   - ASCII (No extended character. Non-LFN cfg. only)
-/   437 - U.S.
-/   720 - Arabic
-/   737 - Greek
-/   771 - KBL
-/   775 - Baltic
-/   850 - Latin 1
-/   852 - Latin 2
-/   855 - Cyrillic
-/   857 - Turkish
-/   860 - Portuguese
-/   861 - Icelandic
-/   862 - Hebrew
-/   863 - Canadian French
-/   864 - Arabic
-/   865 - Nordic
-/   866 - Russian
-/   869 - Greek 2
-/   932 - Japanese (DBCS)
-/   936 - Simplified Chinese (DBCS)
-/   949 - Korean (DBCS)
-/   950 - Traditional Chinese (DBCS)
-*/
-
-
 #define	_USE_LFN	2
 #define	_MAX_LFN	255
 /* The _USE_LFN switches the support of long file name (LFN).
