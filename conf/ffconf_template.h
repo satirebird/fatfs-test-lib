@@ -57,6 +57,22 @@
 
 #define _DIR_SUPPORT 0
 
+#define _FS_EXFAT 0
+
+#define _FS_READONLY 0
+
+#define _FS_NORTC 0
+
+#define _FS_REENTRANT 0
+
+#define _USE_FIND 0
+
+#define _USE_FORWARD 0
+
+#define _USE_EXPAND 0
+
+#define _USE_MKFS 0
+
 /*---------------------------------------------------------------------------/
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/

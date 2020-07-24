@@ -602,9 +602,9 @@ static FRESULT get_line(const TCHAR* vol_path, const char *file, char *dest, siz
 	strcpy(dest, "");
 	FILE *lf = fopen(pp, "r");
 	if (lf != NULL){
-		size_t len = 0;
+		size_t rlen = 0;
 		char *line = NULL;
-		ssize_t nr = getline(&line, &len, lf);
+		ssize_t nr = getline(&line, &rlen, lf);
 		if (nr > 0){
 			if (line[nr - 1] == '\n')
 				line[nr - 1] = 0;
