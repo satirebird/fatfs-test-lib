@@ -251,7 +251,7 @@ FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode){
 
 	fp->fp = fopen(pp, px_mode);
 	if (fp->fp == NULL)
-		errno_to_fresult();
+		return errno_to_fresult();
 
 	return FR_OK;
 }
@@ -555,7 +555,7 @@ FRESULT f_chdrive (const TCHAR* path){
 FRESULT f_getcwd (TCHAR* buff, UINT len){
 
 	if (getcwd(buff, len) < 0)
-		errno_to_fresult();
+		return errno_to_fresult();
 
 	return FR_OK;
 }
