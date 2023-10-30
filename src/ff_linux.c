@@ -251,7 +251,7 @@ FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode){
 
 	fp->fp = fopen(pp, px_mode);
 	if (fp->fp == NULL)
-		errno_to_fresult();
+		return errno_to_fresult();
 
 	return FR_OK;
 }
