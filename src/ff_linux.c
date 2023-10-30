@@ -555,7 +555,7 @@ FRESULT f_chdrive (const TCHAR* path){
 FRESULT f_getcwd (TCHAR* buff, UINT len){
 
 	if (getcwd(buff, len) < 0)
-		errno_to_fresult();
+		return errno_to_fresult();
 
 	return FR_OK;
 }
