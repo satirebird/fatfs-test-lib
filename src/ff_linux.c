@@ -554,7 +554,7 @@ FRESULT f_chdrive (const TCHAR* path){
 #if _FS_RPATH >= 2
 FRESULT f_getcwd (TCHAR* buff, UINT len){
 
-	if (getcwd(buff, len) < 0)
+	if (getcwd(buff, len) == NULL)
 		return errno_to_fresult();
 
 	return FR_OK;
