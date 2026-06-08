@@ -29,9 +29,11 @@
 
 #include <libgen.h>
 
+#ifndef _OOFATFS
 static FATFS *FatFs[_VOLUMES];
 #if _FS_RPATH != 0 && _VOLUMES >= 2
 static int CurrVol = 0;
+#endif
 #endif
 
 #define IsUpper(c)	(((c)>='A')&&((c)<='Z'))
@@ -97,7 +99,7 @@ static int get_ldnumber(const TCHAR** path)
 	return vol;
 }
 
-static FRESULT get_fspath(char *dest, const TCHAR *path){
+static FRESULT get_fspath(FATFS_PARAM char *dest, const TCHAR *path){
 
 	const TCHAR *rp = path;
 
@@ -105,7 +107,9 @@ static FRESULT get_fspath(char *dest, const TCHAR *path){
 	if (vol < 0)
 		return FR_INVALID_DRIVE;
 
+#ifndef _OOFATFS
 	FATFS *fs = FatFs[vol];
+#endif
 
   if (fs == NULL)
     return FR_NO_FILESYSTEM;
@@ -210,15 +214,20 @@ FRESULT f_mount (FATFS* fs, const TCHAR* path, BYTE opt){
 
 	fs->mount_point = pp;
 
+#ifndef _OOFATFS
 	FatFs[vol] = fs;
-
+#endif
 	return FR_OK;
 }
 
-FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode){
+FRESULT f_open (FATFS_PARAM FIL* fp, const TCHAR* path, BYTE mode){
 
 	char pp[_MAX_PATH_LENGTH];
+#ifdef _OOFATFS
+	FRESULT res = get_fspath(fs, pp, path);
+#else
 	FRESULT res = get_fspath(pp, path);
+#endif
 	if (res != FR_OK)
 		return res;
 
@@ -339,11 +348,15 @@ FRESULT f_sync (FIL* fp){
 
 }
 
-FRESULT f_opendir (FATFS_DIR* dp, const TCHAR* path){
+FRESULT f_opendir (FATFS_PARAM FATFS_DIR* dp, const TCHAR* path){
 
   char pp[_MAX_PATH_LENGTH];
-  FRESULT res = get_fspath(pp, path);
-  if (res != FR_OK)
+#ifdef _OOFATFS
+	FRESULT res = get_fspath(fs, pp, path);
+#else
+	FRESULT res = get_fspath(pp, path);
+#endif  
+	if (res != FR_OK)
     return res;
 
   dp->dir = opendir(pp);
@@ -436,10 +449,14 @@ FRESULT f_findnext (FATFS_DIR* dp, FILINFO* fno){
 }
 #endif
 
-FRESULT f_mkdir (const TCHAR* path){
+FRESULT f_mkdir (FATFS_PARAM const TCHAR* path){
 
 	char pp[_MAX_PATH_LENGTH];
+#ifdef _OOFATFS
+	FRESULT res = get_fspath(fs, pp, path);
+#else
 	FRESULT res = get_fspath(pp, path);
+#endif
 	if (res != FR_OK)
 		return res;
 
@@ -449,10 +466,14 @@ FRESULT f_mkdir (const TCHAR* path){
 	return FR_OK;
 }
 
-FRESULT f_unlink (const TCHAR* path){
+FRESULT f_unlink (FATFS_PARAM const TCHAR* path){
 
 	char pp[_MAX_PATH_LENGTH];
+#ifdef _OOFATFS
+	FRESULT res = get_fspath(fs, pp, path);
+#else
 	FRESULT res = get_fspath(pp, path);
+#endif
 	if (res != FR_OK)
 		return res;
 
@@ -462,11 +483,20 @@ FRESULT f_unlink (const TCHAR* path){
 	return FR_OK;
 }
 
-FRESULT f_rename (const TCHAR* path_old, const TCHAR* path_new){
+FRESULT f_rename (FATFS_PARAM const TCHAR* path_old, const TCHAR* path_new){
 
 	char old_pp[_MAX_PATH_LENGTH];
 	char new_pp[_MAX_PATH_LENGTH];
 
+#ifdef _OOFATFS
+	FRESULT res = get_fspath(fs, old_pp, path_old);
+	if (res != FR_OK)
+		return res;
+
+	res = get_fspath(fs, new_pp, path_new);
+	if (res != FR_OK)
+		return res;
+#else
 	FRESULT res = get_fspath(old_pp, path_old);
 	if (res != FR_OK)
 		return res;
@@ -474,6 +504,7 @@ FRESULT f_rename (const TCHAR* path_old, const TCHAR* path_new){
 	res = get_fspath(new_pp, path_new);
 	if (res != FR_OK)
 		return res;
+#endif
 
 	if (rename(old_pp, new_pp) < 0)
 		return errno_to_fresult();
@@ -482,10 +513,14 @@ FRESULT f_rename (const TCHAR* path_old, const TCHAR* path_new){
 }
 
 
-FRESULT f_stat (const TCHAR* path, FILINFO* fno){
+FRESULT f_stat (FATFS_PARAM const TCHAR* path, FILINFO* fno){
 
 	char pp[_MAX_PATH_LENGTH];
+#ifdef _OOFATFS
+	FRESULT res = get_fspath(fs, pp, path);
+#else
 	FRESULT res = get_fspath(pp, path);
+#endif
 	if (res != FR_OK)
 		return res;
 
@@ -510,23 +545,27 @@ FRESULT f_stat (const TCHAR* path, FILINFO* fno){
 	return FR_OK;
 }
 
-FRESULT f_chmod (const TCHAR* path, BYTE attr, BYTE mask){
+FRESULT f_chmod (FATFS_PARAM const TCHAR* path, BYTE attr, BYTE mask){
 
 	// TODO: convert attributes possible?
 	return FR_OK;
 }
 
-FRESULT f_utime (const TCHAR* path, const FILINFO* fno){
+FRESULT f_utime (FATFS_PARAM const TCHAR* path, const FILINFO* fno){
 
 	// TODO: change time support
 	return FR_OK;
 }
 
 #if _FS_RPATH >= 1
-FRESULT f_chdir (const TCHAR* path){
+FRESULT f_chdir (FATFS_PARAM const TCHAR* path){
 
 	char pp[_MAX_PATH_LENGTH];
+#ifdef _OOFATFS
+	FRESULT res = get_fspath(fs, pp, path);
+#else
 	FRESULT res = get_fspath(pp, path);
+#endif
 	if (res != FR_OK)
 		return res;
 
@@ -552,7 +591,7 @@ FRESULT f_chdrive (const TCHAR* path){
 #endif
 
 #if _FS_RPATH >= 2
-FRESULT f_getcwd (TCHAR* buff, UINT len){
+FRESULT f_getcwd (FATFS_PARAM TCHAR* buff, UINT len){
 
 	if (getcwd(buff, len) == NULL)
 		return errno_to_fresult();
@@ -562,7 +601,7 @@ FRESULT f_getcwd (TCHAR* buff, UINT len){
 #endif /* _FS_RPATH >= 2 */
 #endif /* _FS_RPATH >= 1 */
 
-FRESULT f_getfree (const TCHAR* path, DWORD* nclst, FATFS** fatfs){
+FRESULT f_getfree (FATFS_PARAM const TCHAR* path, DWORD* nclst, FATFS** fatfs){
 
 	const TCHAR *rp = path;
 
@@ -570,13 +609,21 @@ FRESULT f_getfree (const TCHAR* path, DWORD* nclst, FATFS** fatfs){
 	if (vol < 0)
 		return FR_INVALID_DRIVE;
 
+#ifndef _OOFATFS
 	if (fatfs)
 		*fatfs = FatFs[vol];
+#else
+	if (fatfs)
+		*fatfs = fs;
+#endif
 
 	if (nclst){
 		struct statvfs svfs;
-
+#if _OOFATFS
+			if (statvfs(fs->mount_point, &svfs) < 0)
+#else
 		if (statvfs(FatFs[vol]->mount_point, &svfs) < 0)
+#endif
 			return errno_to_fresult();
 
 		*nclst = svfs.f_bavail * (svfs.f_bsize / 512);
@@ -585,7 +632,7 @@ FRESULT f_getfree (const TCHAR* path, DWORD* nclst, FATFS** fatfs){
 	return FR_OK;
 }
 
-static FRESULT get_line(const TCHAR* vol_path, const char *file, char *dest, size_t len){
+static FRESULT get_line(FATFS_PARAM const TCHAR* vol_path, const char *file, char *dest, size_t len){
 
 	const TCHAR *rp = vol_path;
 
@@ -593,7 +640,9 @@ static FRESULT get_line(const TCHAR* vol_path, const char *file, char *dest, siz
 	if (vol < 0)
 		return FR_INVALID_DRIVE;
 
+#ifndef _OOFATFS
 	FATFS *fs = FatFs[vol];
+#endif
 
 	char pp[_MAX_PATH_LENGTH];
 	strcpy(pp, fs->mount_point);
@@ -619,18 +668,28 @@ static FRESULT get_line(const TCHAR* vol_path, const char *file, char *dest, siz
 
 }
 
-FRESULT f_getlabel (const TCHAR* path, TCHAR* label, DWORD* vsn){
+FRESULT f_getlabel (FATFS_PARAM const TCHAR* path, TCHAR* label, DWORD* vsn){
 
 	FRESULT result = FR_OK;
 
 	if (label){
-		result = get_line(path, "label.txt", label, 12);
+		result = get_line(
+#ifdef _OOFATFS
+			fs,
+#endif
+			path, "label.txt", label, 12
+		);
 		if (result != FR_OK)
 			return result;
 	}
 	if (vsn){
 		char sn[32];
-		result = get_line(path, "vsn.txt", sn, sizeof(sn));
+		result = get_line(
+#ifdef _OOFATFS
+			fs,
+#endif
+			path, "vsn.txt", sn, sizeof(sn)
+		);
 		if (result != FR_OK)
 			return result;
 		*vsn = atol(sn);
@@ -638,13 +697,15 @@ FRESULT f_getlabel (const TCHAR* path, TCHAR* label, DWORD* vsn){
 	return FR_OK;
 }
 
-FRESULT f_setlabel (const TCHAR* label){
+FRESULT f_setlabel (FATFS_PARAM const TCHAR* label){
 
 	int vol = get_ldnumber(&label);
 	if (vol < 0)
 		return FR_INVALID_DRIVE;
 
+#ifndef _OOFATFS
 	FATFS *fs = FatFs[vol];
+#endif
 
 	char pp[_MAX_PATH_LENGTH];
 	strcpy(pp, fs->mount_point);
